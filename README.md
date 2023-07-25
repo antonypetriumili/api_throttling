@@ -21,7 +21,6 @@
 
 <h2>Introduction to Rack</h2>
 
-<p>There are plenty of <a href="http://jasonseifer.com/2009/04/08/32-rack-resources-to-get-you-started">great resources</a> to learn the basic of Rack so I will not be explaining how Rack works here but you will need to understand it in order to follow this post. I highly recommend watching the <a href="http://remi.org/2009/02/19/rack-basics.html">three</a> <a href="http://remi.org/2009/02/24/rack-part-2.html">Rack</a> <a href="http://remi.org/2009/02/28/rack-part-3-middleware.html">screencasts</a> from <a href="http://remi.org/">Remi</a> to get started with Rack.</p>
 
 <h2>Basic Rack Application</h2>
 
@@ -67,7 +66,6 @@ Hello World!
 
 <p>We need a way to memorize the number of requests that users are making to our web service if we want to limit the rate at which they can use the API. Every time they make a request, we want to check if they've gone past their rate limit before we respond to the request. We also want to store the fact that they've just made a request. Since every call to our web service requires this check and memorization process, we would like this to be done as fast as possible.</p>
 
-<p>This is where Redis comes in. Redis is a super-fast key-value database that we've highlighted <a href="http://blog.messagepub.com/2009/04/20/project-spotlight-redis-a-fast-data-structure-database/">in a previous blog post</a>. It can do about 110,000 SETs per second, about 81,000 GETs per second. That's the kind of performance that we are looking for since we would not like our 'rate limiting' middleware to reduce the performance of our web service.</p>
 
 <p>Install the redis ruby client library with <pre>sudo gem install ezmobius-redis-rb</pre></p>
 
@@ -83,20 +81,12 @@ Hello World!
   <li>If the value of the key is less than the maximum requests per hour limit, then allow the user's request to go through.</li>
 </ul>
 
-<p>Redis has an atomic <a href="http://code.google.com/p/redis/wiki/IncrCommand">INCR command</a> that is the perfect fit for our use case. It increments the key value by one. If the key does not exist, it sets the key to the value of "0" and then increments it. Awesome! We don't even need to write our own logic to check if the key exists before incrementing it, Redis takes care of that for us.</p>
-
 <pre>
 r = Redis.new
 key = "#{auth.username}_#{Time.now.strftime("%Y-%m-%d-%H")}"
 r.incr(key)
 return over_rate_limit if r[key].to_i > @options[:requests_per_hour]
 </pre>
-
-<p>If our redis-server is not running, rather than throwing an error affecting all our users, we will let all the requests pass through by catching the exception and doing nothing. That means that if your redis-server goes down, you are no longer throttling the use of your web service so you need to make sure it's always running (using <a href="http://mmonit.com/monit/">monit</a> or <a href="http://god.rubyforge.org/">god</a>, for example).</p>
-
-<p>Finally, we want anyone who might use this Rack middleware to be able to set their limit via the <em>requests_per_hour</em> option.</p>
-
-<p>The full code for our middleware is below. You can also find it at <a href="https://github.com/dambalah/api-throttling">github.com/dambalah/api-throttling</a>.</p>
 
 <pre>
 require 'rubygems'
