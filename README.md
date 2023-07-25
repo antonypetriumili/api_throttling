@@ -2,11 +2,6 @@
 
 <p>I will show you a technique to impose a rate limit (aka API Throttling) on a Ruby Web Service. I will be using Rack middleware so you can use this no matter what Ruby Web Framework you are using, as long as it is Rack-compliant.</p>
 
-<h2>Installation</h2>
-<p>This middleware has recently been gemmified, you can install the latest gem using:</p>
-<pre>sudo gem install jduff-api-throttling</pre>
-<p>If you prefer to have the latest source it can be found at http://github.com/jduff/api-throttling/tree (this is a fork of http://github.com/dambalah/api-throttling/tree with a number of recent changes)</p>
-
 <h2>Usage</h2>
 <p>In your rack application simply use the middleware and pass it some options</p>
 <pre>use ApiThrottling, :requests_per_hour => 3</pre>
